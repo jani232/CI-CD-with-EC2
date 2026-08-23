@@ -1,0 +1,59 @@
+name: Deploy Java Login to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build WAR
+        run: |
+          mkdir -p build/WEB-INF/classes
+          mkdir -p build/WEB-INF/lib
+
+          cp src/main/webapp/WEB-INF/lib/*.jar build/WEB-INF/lib/
+          
+          javac -cp "/usr/share/java/jakarta-servlet-api.jar:build/WEB-INF/lib/*" \
+            -d build/WEB-INF/classes \
+            $(find src/main/java -name "*.java")
+
+          cp src/main/webapp/*.jsp build/
+          cp -r src/main/webapp/css build/
+
+          jar -cvf java-login.war -C build/ .
+
+      - name: Copy WAR to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: "java-login.war"
+          target: "/home/ubuntu/"
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            sudo systemctl stop tomcat10
+            sudo rm -rf /var/lib/tomcat10/webapps/java-login
+            sudo rm -f /var/lib/tomcat10/webapps/java-login.war
+            sudo cp /home/ubuntu/java-login.war /var/lib/tomcat10/webapps/
+            sudo chown tomcat:tomcat /var/lib/tomcat10/webapps/java-login.war
+            sudo systemctl start tomcat10
