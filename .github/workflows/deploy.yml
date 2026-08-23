@@ -19,14 +19,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Download Jakarta Servlet API
+        run: |
+          mkdir -p build/lib
+          curl -L -o build/lib/jakarta-servlet-api.jar \
+            https://repo1.maven.org/maven2/jakarta/servlet/jakarta.servlet-api/6.0.0/jakarta.servlet-api-6.0.0.jar
+
       - name: Build WAR
         run: |
           mkdir -p build/WEB-INF/classes
           mkdir -p build/WEB-INF/lib
 
           cp src/main/webapp/WEB-INF/lib/*.jar build/WEB-INF/lib/
-          
-          javac -cp "/usr/share/java/jakarta-servlet-api.jar:build/WEB-INF/lib/*" \
+
+          javac \
+            -cp "build/lib/jakarta-servlet-api.jar:build/WEB-INF/lib/*" \
             -d build/WEB-INF/classes \
             $(find src/main/java -name "*.java")
 
