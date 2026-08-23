@@ -2,6 +2,10 @@
 
 
 
+\[!\[CI/CD Pipeline](https://github.com/jani232/CI-CD-with-EC2/actions/workflows/deploy.yml/badge.svg)](https://github.com/jani232/CI-CD-with-EC2/actions/workflows/deploy.yml)
+
+
+
 A Java-based login and registration web application deployed on AWS EC2 using Apache Tomcat, with an automated CI/CD pipeline implemented using GitHub Actions.
 
 
