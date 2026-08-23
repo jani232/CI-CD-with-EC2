@@ -64,3 +64,14 @@ jobs:
             sudo cp /home/ubuntu/java-login.war /var/lib/tomcat10/webapps/
             sudo chown tomcat:tomcat /var/lib/tomcat10/webapps/java-login.war
             sudo systemctl start tomcat10
+
+echo "Waiting for Tomcat..."
+sleep 8
+
+echo "Checking Tomcat status..."
+sudo systemctl is-active --quiet tomcat10
+
+echo "Checking application..."
+curl --fail --silent --show-error http://localhost:8080/java-login/login.jsp > /dev/null
+
+echo "Deployment successful!"
